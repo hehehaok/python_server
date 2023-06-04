@@ -286,7 +286,7 @@ class Ui_MainWindow(object):
         self.label.setText(_translate("MainWindow", "本机IP:"))
         self.label_ip.setText(_translate("MainWindow", "192.168.2.239"))
         self.label_2.setText(_translate("MainWindow", "端口Port:"))
-        self.lineEdit_Port.setText(_translate("MainWindow", "9000"))
+        self.lineEdit_Port.setText(_translate("MainWindow", "6000"))
         self.pushButton.setText(_translate("MainWindow", "OPEN"))
         self.label_port_state.setText(_translate("MainWindow", "TCP Status:端口没有打开！"))
         self.groupBox_3.setTitle(_translate("MainWindow", "定位结果"))

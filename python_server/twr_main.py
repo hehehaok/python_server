@@ -61,6 +61,7 @@ class Trilateration:
 
 
 # &&&:80$000A:20$0001:A1B1:11#0002:A2B2:22#0003:A3B3::33#0004:A4B4:44#0005:A5B5:55$CRC####
+# 新的格式：&&&:80$000A:20$0001:A1B1:0011#0002:A2B2:0022#0003:A3B3:0033#0004:A4B4:0044#0005:A5B5:0055$CRC####
 # 根据约定格式提取数据包里的各个信息
 def bphero_dispose(string):
     result_dict = {'tag': 0x1005, 'seq': 7, 'time': 1234, 'anthor_count': 4,'anthor': []}
@@ -82,16 +83,16 @@ def bphero_dispose(string):
         result_dict['seq'] = tag_seq
 
         # anthor info
-        temp_string = string.split("$")[2]  # 0001:A1B1:11#0002:A2B2:22#0003:A3B3:33#0004:A4B4:44#0005:A5B5:55
+        temp_string = string.split("$")[2]  # 0001:A1B1:0011#0002:A2B2:0022#0003:A3B3:0033#0004:A4B4:0044#0005:A5B5:0055
         anthor_count = len(temp_string.split('#'))
         result_dict['anthor_count'] = anthor_count
 
         for index in range(anthor_count):
-            anthor_info = temp_string.split('#')[index]  # 0001:A1B1:11
+            anthor_info = temp_string.split('#')[index]  # 0001:A1B1:0011
             anthor_id = int(anthor_info.split(":")[0], 16)
             anthor_dist = 0.01*int(anthor_info.split(":")[1], 16)   # convert to cm
             print("Anthor%d Distance = %0.2f m"% (index+1, anthor_dist))
-            anthor_rssi = int(anthor_info.split(":")[2], 16)
+            anthor_rssi = -0.01*int(anthor_info.split(":")[2], 16)
             result_dict['anthor'].append([anthor_id, anthor_dist, anthor_rssi])
         flag = 0
     return flag, result_dict

@@ -96,7 +96,8 @@ class HuiTu(QtWidgets.QMainWindow, Ui_MainWindow):
             ratio = ratio_y
         else:
             ratio = ratio_x
-        ratio = int(ratio * 0.9)
+        # ratio = int(ratio * 0.9)
+        ratio = int(ratio * 0.6)
 
         print("width = %d heigh = %d" % (width, heigh))
         print("RATIO_X = %d RATIO_Y = %d RATIO = %d" % (ratio_x, ratio_y, ratio))
@@ -123,12 +124,16 @@ class HuiTu(QtWidgets.QMainWindow, Ui_MainWindow):
             else:
                 Qitem.setBrush(QBrush(QtGui.QColor(QtCore.Qt.green)))
 
-            Qitem.setPos(item['x'] * self.ratio + self.ratio, heigh - (item['y'] * self.ratio + self.ratio))
+            # refx = item['x'] * self.ratio + self.ratio
+            # refy = heigh - (item['y'] * self.ratio + self.ratio)
+            refx = item['x'] * self.ratio + width*0.35
+            refy = heigh - (item['y'] * self.ratio + heigh*0.25)
+
+            Qitem.setPos(refx, refy)
             self.scene.addItem(Qitem)
 
             self.itemHELLO = form.scene.addText("x:" + str(item['x']) + " y:" + str(item['y']))  #
-            self.itemHELLO.setPos(item['x'] * self.ratio + self.ratio,
-                                  heigh - (item['y'] * self.ratio + self.ratio + 15))
+            self.itemHELLO.setPos(refx, refy-15)
             item['qt'] = Qitem
 
         pen = QPen()
@@ -214,8 +219,12 @@ class HuiTu(QtWidgets.QMainWindow, Ui_MainWindow):
         heigh = self.graphicsView.height()
         width = self.graphicsView.viewport().width()
 
+        # refx = point_x * self.ratio + self.ratio
+        # refy = heigh - (point_x * self.ratio + self.ratio)
+        refx = point_x * self.ratio + width * 0.35
+        refy = heigh - (point_x * self.ratio + heigh * 0.25)
         Qitem = QGraphicsEllipseItem(-10, -10, 8, 8)
-        Qitem.setPos(int(point_x * self.ratio + self.ratio), int(heigh - (point_y * self.ratio + self.ratio)))
+        Qitem.setPos(int(refx), int(refy))
 
         Qitem.setBrush(QBrush(self.gQtColor[color_index]))
         Qitem.setPen(QPen(self.gQtColor[color_index]))
