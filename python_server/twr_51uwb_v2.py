@@ -78,6 +78,7 @@ class HuiTu(QtWidgets.QMainWindow, Ui_MainWindow):
         self.table_tag.setAlternatingRowColors(True)
         self.edit_log.setMaximumBlockCount(1000)  # log box 函数限制
         self.enable_log = False
+        self.log_file = []
 
     def compute_ratio(self, width, heigh, Anthor_Node_Configure):
         max_data_x = 0
@@ -376,13 +377,33 @@ class HuiTu(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def do_btn_start_log(self):
         if self.btn_start.text() == "START":
+            self.get_filename()
             self.enable_log = True
             self.btn_start.setText("STOP")
             return
         if self.btn_start.text() == "STOP":
             self.enable_log = False
+            self.save_log()
             self.btn_start.setText("START")
             return
+
+    def get_filename(self):
+        fileInfo = self.edit_log.toPlainText()
+        self.log_file = fileInfo.split(":")[0]
+        maxRaw = int(fileInfo.split(":")[1])
+        self.edit_log.clear()
+        self.edit_log.document().setMaximumBlockCount(maxRaw)
+        return
+
+    def save_log(self):
+        dir = 'logData'
+        if not os.path.exists(dir):
+            os.makedirs(dir)
+        f = open(dir + '/' + self.log_file + '.txt', "w")
+        text = self.edit_log.toPlainText()
+        f.write(text)
+        f.close()
+        return
 
     def closeEvent(self, event):
         """
