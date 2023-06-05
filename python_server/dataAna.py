@@ -6,7 +6,7 @@ from twr_main import *
 
 class dataAna:
     def __init__(self, truePos, filePath):
-        self.posResult = []
+        self.posResult = 0
         self.truePos = truePos
         self.filePath = filePath
 
@@ -21,17 +21,20 @@ class dataAna:
         f.close()
         self.posResult = posResult
 
+    def calRMS(self):
+        return np.mean(np.linalg.norm(self.posResult-self.truePos, axis=1))
 
 # 配置参数1
-truePos = np.array([[3.0, 4.0]])
+truePos = np.array([[-5.98, -15.07]])
 dir = 'logData/'
 log_file = '123.txt'
 filePath = dir + log_file
 
 data1 = dataAna(truePos, filePath)
 data1.loadData()
+rms = data1.calRMS()
 print(data1.posResult)
-
+print(rms)
 
 
 

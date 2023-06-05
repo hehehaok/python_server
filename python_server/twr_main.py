@@ -71,6 +71,35 @@ class Trilateration:
         # return x, y position
         return result_x, result_y
 
+    def trilaterate3D_2(self, iterations=20, refPos0=None):
+        if refPos0 is None:
+            refPos = np.matrix(np.zeros((3, 1)))
+        else:
+            assert np.shape(refPos0) == (3, 1), \
+                "Error: Expected refPos0 to be of shape (3,1), \
+                given refPos0 has shape:" + str(np.shape(refPos0))
+            refPos = refPos0
+        position = np.matrix(self.position).T
+        numRx = np.shape(position)[1]
+        A = np.matrix(np.zeros((numRx, 3)))
+        b = np.matrix(np.zeros((numRx, 1)))
+
+        for i in range(iterations):
+            for idx in range(numRx):
+                b[idx, 0] = self.distances[idx] - np.linalg.norm(position[:, idx] - refPos)
+                A[idx, :] = -((position[:, idx] - refPos) / np.linalg.norm(position[:, idx] - refPos)).T
+
+            x, _, _, _ = np.linalg.lstsq(A, b, rcond=None)
+            refPos = refPos + x
+            if np.linalg.norm(x) < 1.0e-2:
+                break
+        self.result = refPos
+        result_x = self.result[0]
+        result_y = self.result[1]
+        result_z = self.result[2]
+        # return x, y position
+        return result_x, result_y
+
     def setDistances(self, distances):
         self.distances = distances
 
@@ -133,7 +162,7 @@ def Compute_Location(Input_Data):
         tril2d = Trilateration()
         tril2d.setDistances(Info['distance'])
         tril2d.setAnthorCoor(Info['anthor'])
-        result_x, result_y = tril2d.trilaterate3D()
+        result_x, result_y = tril2d.trilaterate2D()
         result_flag = 1
         print("x = %0.2f, y = %0.2f" % (result_x, result_y))
     return result_flag, Info['seq'], Info['tag'], result_x, result_y
@@ -153,7 +182,7 @@ def twr_main(input_string):
     return 0, 0, 0, 0, 0
 
 # test code ==============================
-# '''
+'''
 x = 3.2
 y = 1
 import math
@@ -169,6 +198,6 @@ print(dis4)
 s = '&&&:80$000A:20$0001:%04X:11#0002:%04X:22#0003:%04X:33#0004:%04X:44$CRC####' % (int(dis1*100), int(dis2*100),int(dis3*100),int(dis4*100))
 print(s)
 twr_main(s)
-# '''
+'''
 # test code end ===========================
 
