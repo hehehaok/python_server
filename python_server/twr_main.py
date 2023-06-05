@@ -13,10 +13,10 @@ import numpy as np
 
 class Trilateration:
     def __init__(self):
-        self.position = np.array([[-0.5, -0.5],
-                                  [5.5, -0.5],
-                                  [5.5, 5.5],
-                                  [-0.5, 5.5]])
+        self.position = np.array([[-0.5, -0.5, 0],
+                                  [5.5, -0.5, 0],
+                                  [5.5, 5.5, 0],
+                                  [-0.5, 5.5, 0]])
         self.distances = []
         self.result = 0
 
@@ -51,6 +51,26 @@ class Trilateration:
         # return x, y position
         return result_x, result_y
 
+    def trilaterate3D(self):
+        A = []
+        B = []
+        r2_3 = np.sum([x**2 for x in self.position[3][:]])
+        for idx in range(3):
+            x_coefficient = self.position[3][0] - self.position[idx][0]
+            y_coefficient = self.position[3][1] - self.position[idx][1]
+            z_coefficient = self.position[3][2] - self.position[idx][2]
+            r2_idx = np.sum([x**2 for x in self.position[idx][:]])
+            b = 1 / 2 * (self.distances[idx] ** 2 - self.distances[3] ** 2 + r2_3 - r2_idx)
+            A.append([x_coefficient, y_coefficient, z_coefficient])
+            B.append([b])
+        B = np.array(B)
+        A_pseudo = np.linalg.pinv(A)
+        self.result = np.dot(A_pseudo, B)
+        result_x = self.result[0]
+        result_y = self.result[1]
+        # return x, y position
+        return result_x, result_y
+
     def setDistances(self, distances):
         self.distances = distances
 
@@ -58,6 +78,7 @@ class Trilateration:
         for index in range(len(Anthor_Node_Configure)):
             self.position[index][0] = Anthor_Node_Configure[index][0]
             self.position[index][1] = Anthor_Node_Configure[index][1]
+            self.position[index][2] = Anthor_Node_Configure[index][2]
 
 
 # &&&:80$000A:20$0001:A1B1:11#0002:A2B2:22#0003:A3B3::33#0004:A4B4:44#0005:A5B5:55$CRC####
@@ -112,7 +133,7 @@ def Compute_Location(Input_Data):
         tril2d = Trilateration()
         tril2d.setDistances(Info['distance'])
         tril2d.setAnthorCoor(Info['anthor'])
-        result_x, result_y = tril2d.trilaterate2D()
+        result_x, result_y = tril2d.trilaterate3D()
         result_flag = 1
         print("x = %0.2f, y = %0.2f" % (result_x, result_y))
     return result_flag, Info['seq'], Info['tag'], result_x, result_y
@@ -132,7 +153,7 @@ def twr_main(input_string):
     return 0, 0, 0, 0, 0
 
 # test code ==============================
-'''
+# '''
 x = 3.2
 y = 1
 import math
@@ -148,6 +169,6 @@ print(dis4)
 s = '&&&:80$000A:20$0001:%04X:11#0002:%04X:22#0003:%04X:33#0004:%04X:44$CRC####' % (int(dis1*100), int(dis2*100),int(dis3*100),int(dis4*100))
 print(s)
 twr_main(s)
-'''
+# '''
 # test code end ===========================
 
