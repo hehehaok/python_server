@@ -68,6 +68,7 @@ class Trilateration:
         self.result = np.dot(A_pseudo, B)
         result_x = self.result[0]
         result_y = self.result[1]
+        result_z = self.result[2]
         # return x, y position
         return result_x, result_y
 
@@ -170,7 +171,11 @@ def Compute_Location(Input_Data):
 
 # step1 处理接收来的数据包
 def Process_String_Before_Udp(NewString):
-    error_flag, result_dic = bphero_dispose(NewString)
+    try:
+        error_flag, result_dic = bphero_dispose(NewString)
+    except:
+        print('error')
+        return 1,0
     return error_flag, result_dic
 
 def twr_main(input_string):

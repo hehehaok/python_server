@@ -25,21 +25,26 @@ class dataAna:
         return np.mean(np.linalg.norm(self.posResult-self.truePos, axis=1))
 
 # 配置参数1
-truePos = np.array([[-5.98, -15.07]])
+truePosA = np.array([[0, 1.40]])
 dir = 'logData/'
-log_file = '123.txt'
-filePath = dir + log_file
+log_file = 'posA.txt'
+filePathA = dir + log_file
 
-data1 = dataAna(truePos, filePath)
-data1.loadData()
-rms = data1.calRMS()
-print(data1.posResult)
-print(rms)
-
-
+dataA = dataAna(truePosA, filePathA)
+dataA.loadData()
+rmsA = dataA.calRMS()
+print(dataA.posResult)
+print(rmsA)
 
 
-
-
-
-
+# 配置参数2
+# truePosB = np.array([[1.4, 2.94]])
+# dir = 'logData/'
+# log_file = 'posB.txt'
+# filePathB = dir + log_file
+#
+# dataB = dataAna(truePosB, filePathB)
+# dataB.loadData()
+# rmsB = dataB.calRMS()
+# print(dataB.posResult)
+# print(rmsB)
