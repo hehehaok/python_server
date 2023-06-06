@@ -52,6 +52,9 @@ class Trilateration:
         return result_x, result_y
 
     def trilaterate3D(self):
+        '''
+        在UWB基站架设的时候，需要特别拉开z轴的高度差，以确保在z轴上的精确度。
+        '''
         A = []
         B = []
         r2_3 = np.sum([x**2 for x in self.position[3][:]])
@@ -70,7 +73,7 @@ class Trilateration:
         result_y = self.result[1]
         result_z = self.result[2]
         # return x, y position
-        return result_x, result_y
+        return result_x, result_y, result_z
 
     def trilaterate3D_2(self, iterations=20, refPos0=None):
         if refPos0 is None:
@@ -149,9 +152,6 @@ def bphero_dispose(string):
     return flag, result_dict
 
 
-
-
-
 def Compute_Location(Input_Data):
     Info = BP_Process_String(Input_Data)
     print(Info)
@@ -167,6 +167,24 @@ def Compute_Location(Input_Data):
         result_flag = 1
         print("x = %0.2f, y = %0.2f" % (result_x, result_y))
     return result_flag, Info['seq'], Info['tag'], result_x, result_y
+
+
+def Compute_Location_3D(Input_Data):
+    Info = BP_Process_String(Input_Data)
+    print(Info)
+    if Info['count'] < 4:
+        result_x = 0
+        result_y = 0
+        result_z = 0
+        result_flag = 0
+    else:
+        tril3d = Trilateration()
+        tril3d.setDistances(Info['distance'])
+        tril3d.setAnthorCoor(Info['anthor'])
+        result_x, result_y, result_z = tril3d.trilaterate3D()
+        result_flag = 1
+        print("x = %0.2f, y = %0.2f, z = %0.2f" % (result_x, result_y, result_z))
+    return result_flag, Info['seq'], Info['tag'], result_x, result_y, result_z
 
 
 # step1 处理接收来的数据包
@@ -185,6 +203,14 @@ def twr_main(input_string):
         [location_result, location_seq, location_addr, location_x, location_y] = Compute_Location(result_dic)
         return location_result, location_seq, location_addr, location_x, location_y
     return 0, 0, 0, 0, 0
+
+def twr_main_3D(input_string):
+    print(input_string)
+    error_flag, result_dic = Process_String_Before_Udp(input_string)
+    if error_flag == 0:
+        [location_result, location_seq, location_addr, location_x, location_y, location_z] = Compute_Location_3D(result_dic)
+        return location_result, location_seq, location_addr, location_x, location_y, location_z
+    return 0, 0, 0, 0, 0, 0
 
 # test code ==============================
 '''

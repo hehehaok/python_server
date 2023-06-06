@@ -270,6 +270,7 @@ class HuiTu(QtWidgets.QMainWindow, Ui_MainWindow):
                 #                total = len(item['result'])
                 sum_x = 0
                 sum_y = 0
+                sum_z = 0
                 item['result'].append(coor_info)
 
                 for i in range(len(item['result'])):
@@ -278,9 +279,10 @@ class HuiTu(QtWidgets.QMainWindow, Ui_MainWindow):
                     # 计算历史平均x 和 y
                     sum_x = sum_x + item['result'][i]['x']
                     sum_y = sum_y + item['result'][i]['y']
+                    sum_z = sum_z + item['result'][i]['z']
                 avg_x = sum_x / len(item['result'])
                 avg_y = sum_y / len(item['result'])
-                avg_z = 0
+                avg_z = sum_z / len(item['result'])
                 # 检查下面为何一个定位结果执行两边？？？
                 print("avg_x = %0.2f, avg_y = %0.2f" % (avg_x, avg_y))
                 # 第二步将新数据追加到数据，透明度为0
@@ -296,7 +298,7 @@ class HuiTu(QtWidgets.QMainWindow, Ui_MainWindow):
         self.gTag_Result.append({'short_address': short_address, 'result': [coor_info]})
         self.Show_Tag_Pic(coor_info, coor_info['x'], coor_info['y'], index % 10)  # 一共10个颜色，第十一个和第一个颜色一样
         #        self.Show_Tag_Pic(coor_info,index%10)#第十一个和第一个颜色一样
-        self.show_tag_result(short_address, coor_info['x'], coor_info['y'], 0, index)
+        self.show_tag_result(short_address, coor_info['x'], coor_info['y'], coor_info['z'], index)
         # update in datatable
         return
 
@@ -497,10 +499,14 @@ class TCP_SERVER(QtCore.QThread):
                 msg = bytes.decode(encoding='utf8')
                 self.data_draf.emit(msg)  # for debug only
 
-                [location_result, location_seq, location_addr, location_x, location_y] = twr_main(msg)
+                # [location_result, location_seq, location_addr, location_x, location_y] = twr_main(msg)
+                # if location_result == 1:
+                #     self.data_result.emit(
+                #         '%d %d %0.2f %0.2f' % (location_seq, location_addr, location_x, location_y))
+                [location_result, location_seq, location_addr, location_x, location_y, location_z] = twr_main_3D(msg)
                 if location_result == 1:
                     self.data_result.emit(
-                        '%d %d %0.2f %0.2f' % (location_seq, location_addr, location_x, location_y))
+                        '%d %d %0.2f %0.2f %0.2f' % (location_seq, location_addr, location_x, location_y, location_z))
             except Exception as e:
                 print(e)
                 break
@@ -528,15 +534,24 @@ class TCP_SERVER(QtCore.QThread):
         self.g_socket_server.close()
 
 
+# def insert_result(input_str):
+#     strlist = input_str.split(' ')
+#     location_addr = int(strlist[1])
+#     location_x = float(strlist[2])
+#     location_y = float(strlist[3])
+#     print("insert result")
+#     form.Insert_Tag_Result(location_addr,
+#                            {"x": location_x, "y": location_y, "z": 0, "qt": QGraphicsEllipseItem(-10, -10, 10, 10)})
+
 def insert_result(input_str):
     strlist = input_str.split(' ')
     location_addr = int(strlist[1])
     location_x = float(strlist[2])
     location_y = float(strlist[3])
+    location_z = float(strlist[4])
     print("insert result")
     form.Insert_Tag_Result(location_addr,
-                           {"x": location_x, "y": location_y, "z": 0, "qt": QGraphicsEllipseItem(-10, -10, 10, 10)})
-
+                           {"x": location_x, "y": location_y, "z": location_z, "qt": QGraphicsEllipseItem(-10, -10, 10, 10)})
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
