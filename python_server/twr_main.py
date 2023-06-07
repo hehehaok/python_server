@@ -75,6 +75,34 @@ class Trilateration:
         # return x, y position
         return result_x, result_y, result_z
 
+    def trilaterate2D_2(self, iterations=20, refPos0=None):
+        if refPos0 is None:
+            refPos = np.matrix(np.zeros((2, 1)))
+        else:
+            assert np.shape(refPos0) == (2, 1), \
+                "Error: Expected refPos0 to be of shape (2,1), \
+                given refPos0 has shape:" + str(np.shape(refPos0))
+            refPos = refPos0
+        position = np.matrix(self.position[:,:-1]).T
+        numRx = np.shape(position)[1]
+        A = np.matrix(np.zeros((numRx, 2)))
+        b = np.matrix(np.zeros((numRx, 1)))
+
+        for i in range(iterations):
+            for idx in range(numRx):
+                b[idx, 0] = self.distances[idx] - np.linalg.norm(position[:, idx] - refPos)
+                A[idx, :] = -((position[:, idx] - refPos) / np.linalg.norm(position[:, idx] - refPos)).T
+
+            x, _, _, _ = np.linalg.lstsq(A, b, rcond=None)
+            refPos = refPos + x
+            if np.linalg.norm(x) < 1.0e-2:
+                break
+        self.result = refPos
+        result_x = self.result[0]
+        result_y = self.result[1]
+        # return x, y position
+        return result_x, result_y
+
     def trilaterate3D_2(self, iterations=20, refPos0=None):
         if refPos0 is None:
             refPos = np.matrix(np.zeros((3, 1)))
@@ -102,7 +130,7 @@ class Trilateration:
         result_y = self.result[1]
         result_z = self.result[2]
         # return x, y position
-        return result_x, result_y
+        return result_x, result_y, result_z
 
     def setDistances(self, distances):
         self.distances = distances
@@ -145,7 +173,7 @@ def bphero_dispose(string):
             anthor_info = temp_string.split('#')[index]  # 0001:A1B1:0011
             anthor_id = int(anthor_info.split(":")[0], 16)
             anthor_dist = 0.01*int(anthor_info.split(":")[1], 16)   # convert to cm
-            print("Anthor%d Distance = %0.2f m"% (index+1, anthor_dist))
+            # print("Anthor%d Distance = %0.2f m"% (index+1, anthor_dist))
             anthor_rssi = -0.01*int(anthor_info.split(":")[2], 16)
             result_dict['anthor'].append([anthor_id, anthor_dist, anthor_rssi])
         flag = 0

@@ -255,7 +255,7 @@ class HuiTu(QtWidgets.QMainWindow, Ui_MainWindow):
         newItem.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
 
     # 在TAG Result 数组里插入一组数据，并更新图像显示和表格
-    def Insert_Tag_Result(self, short_address, coor_info):  # coor_info 是一个数组["x":0,"y":12,"z":0}]
+    def Insert_Tag_Result(self, short_address, coor_info):  # coor_info 是一个数组[{"x":0,"y":12,"z":0}]
         index = 0
         for item in self.gTag_Result:
             # 下面有if 修改为while，当MAX_HISTORY 设定从大减到小，多余的标签显示结果全部删除
@@ -284,7 +284,7 @@ class HuiTu(QtWidgets.QMainWindow, Ui_MainWindow):
                 avg_y = sum_y / len(item['result'])
                 avg_z = sum_z / len(item['result'])
                 # 检查下面为何一个定位结果执行两边？？？
-                print("avg_x = %0.2f, avg_y = %0.2f" % (avg_x, avg_y))
+                print("avg_x = %0.2f, avg_y = %0.2f, avg_z = %0.2f" % (avg_x, avg_y, avg_z))
                 # 第二步将新数据追加到数据，透明度为0
                 # 显示结果用平均结果显示，这里做到类似一个均值滤波
                 self.Show_Tag_Pic(coor_info, avg_x, avg_y, index % 10)  # 一共10个颜色，第十一个和第一个颜色一样
