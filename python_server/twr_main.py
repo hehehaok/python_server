@@ -123,7 +123,7 @@ class Trilateration:
 
             x, _, _, _ = np.linalg.lstsq(A, b, rcond=None)
             refPos = refPos + x
-            if np.linalg.norm(x) < 1.0e-2:
+            if np.linalg.norm(x) < 1.0e-3:
                 break
         self.result = refPos
         result_x = self.result[0]
