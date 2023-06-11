@@ -143,15 +143,15 @@ class dataAna:
 # 配置参数3
 # truePosA2 = np.array([[4.0, 5.0, 1.08]])
 # dir = 'logData/'
-# log_file = 'posA2.txt'
+# log_file = 'posA1.txt'
 # filePathA2 = dir + log_file
 #
 # dataA2 = dataAna(truePosA2, filePathA2)
 # dataA2.calPos3D()
-# dataA2.scatterPlot2D()
 # # dataA2.calPos3DInTyler()
+# dataA2.scatterPlot2D()
 # rmsA2 = dataA2.calRMS2D()
-# print(dataA2.posResult)
+# # print(dataA2.posResult)
 # print(rmsA2)
 
 # 配置参数4
@@ -169,15 +169,29 @@ class dataAna:
 # # print(rmsE1)
 
 # 配置参数5
-truePosF1 = np.array([[0, 0, 1.08]])
+# truePosF1 = np.array([[0, 0, 1.08]])
+# dir = 'logData/'
+# log_file = 'posF1.txt'
+# filePathF1 = dir + log_file
+#
+# dataF1 = dataAna(truePosF1, filePathF1)
+# # dataF1.calPos2D()
+# dataF1.calPos2DInTyler()
+# dataF1.scatterPlot2D()
+# # rmsF1 = dataF1.calRMS2D()
+# print(dataF1.posResult)
+# print(rmsF1)
+
+# 配置参数5
+truePosF1 = np.array([[7.8, 2.96, 1.08]])
 dir = 'logData/'
-log_file = 'posF1.txt'
+log_file = 'posB1.txt'
 filePathF1 = dir + log_file
 
 dataF1 = dataAna(truePosF1, filePathF1)
-dataF1.calPos2D()
+# dataF1.calPos2D()
+dataF1.calPos2DInTyler()
 dataF1.scatterPlot2D()
-# dataF1.calPos3DInTyler()
 # rmsF1 = dataF1.calRMS2D()
 print(dataF1.posResult)
-# print(rmsF1)
+print(rmsF1)
