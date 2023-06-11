@@ -35,6 +35,7 @@ def Anthor_Coordinate_Process(Anthor_info):
     Coorinate_List = []
     TimeStamp_List = []
     RSSI_List = []
+    isNlos_List = []
     Find_Anthor_Flag = 0
     # loop anthor list
     for item in Anthor_info:
@@ -42,12 +43,14 @@ def Anthor_Coordinate_Process(Anthor_info):
         [flag, x, y, z] = Find_Anthor_Coor(Anthor_Address)  # 从配置信息中获取该基站对应的三维坐标
         if flag == 1:  # 基站配置信息获取到基站的三维坐标
             Coorinate_List.append([x, y, z])  # 将三维坐标追加的List中
-            TimeStamp = item[1]  # 提取时间戳信息，只提取那些基站地址匹配到的时间信息，与基站一一对应
+            TimeStamp = item[1]  # 提取时间戳信息，只提取那些基站地址匹配到的时间信息，与基站一一对应，实际上是距离信息
             TimeStamp_List.append(TimeStamp)  # 将时间戳信息追加到List中
             Rssi = item[2]
             RSSI_List.append(Rssi)
+            isNlos = item[3]
+            isNlos_List.append(isNlos)
             Find_Anthor_Flag = 1  # 标记找到基站
-    return Find_Anthor_Flag, Coorinate_List, TimeStamp_List, RSSI_List
+    return Find_Anthor_Flag, Coorinate_List, TimeStamp_List, RSSI_List, isNlos_List
 
 # input
 # {'tag': 10, 'seq': 32, 'time': 1234, 'anthor_count': 5, 'anthor': [[1, 41393, 17], [2, 41650, 34], [3, 41907, 51], [4, 42164, 68], [5, 42421, 85]]}
@@ -60,12 +63,12 @@ def BP_Process_String(Input_String):
 
     # 返回数据
     # {'tag': '0008', 'seq': 186, 'anthor':[[x1,y1,z1],[x2,y2,z2],[x3,y3,z3]],'distance': [120,45,9]}
-    New_Dict = {'tag': 0, 'seq': 0, 'count': 0, 'anthor': [], 'distance': [], 'Rssi': []}
+    New_Dict = {'tag': 0, 'seq': 0, 'count': 0, 'anthor': [], 'distance': [], 'Rssi': [], 'isNlos': []}
     New_Dict['tag'] = Input_String['tag']
     New_Dict['seq'] = Input_String['seq']
 
     # 提出基站信息
-    (Anthor_Flag, Coor_Address, Dist_Stamp, Rssi_List) = Anthor_Coordinate_Process(Input_String['anthor'])
+    (Anthor_Flag, Coor_Address, Dist_Stamp, Rssi_List, isNlos_List) = Anthor_Coordinate_Process(Input_String['anthor'])
     if Anthor_Flag == 0:
         print("Error! Could Not Find ANTHOR Node Address !!")
         return New_Dict
@@ -76,6 +79,7 @@ def BP_Process_String(Input_String):
         New_Dict["anthor"].append([Anthor_Address.x, Anthor_Address.y, Anthor_Address.z])
         New_Dict["distance"].append(Dist_Stamp[index])
         New_Dict["Rssi"].append(Rssi_List[index])
+        New_Dict["isNlos"].append(isNlos_List[index])
     # 记录有多少个基站在配置文件找到对应坐标信息
     New_Dict["count"] = len(Coor_Address)
     return New_Dict

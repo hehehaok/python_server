@@ -503,10 +503,10 @@ class TCP_SERVER(QtCore.QThread):
                 # if location_result == 1:
                 #     self.data_result.emit(
                 #         '%d %d %0.2f %0.2f' % (location_seq, location_addr, location_x, location_y))
-                [location_result, location_seq, location_addr, location_x, location_y, location_z] = twr_main_3D(msg)
-                if location_result == 1:
+                [location_flag, location_seq, location_addr, isNlos, location_x, location_y, location_z] = twr_main(msg)
+                if location_flag == 1:
                     self.data_result.emit(
-                        '%d %d %0.2f %0.2f %0.2f' % (location_seq, location_addr, location_x, location_y, location_z))
+                        '%d %d %d %0.2f %0.2f %0.2f' % (location_seq, location_addr, isNlos, location_x, location_y, location_z))
             except Exception as e:
                 print(e)
                 break
@@ -546,9 +546,10 @@ class TCP_SERVER(QtCore.QThread):
 def insert_result(input_str):
     strlist = input_str.split(' ')
     location_addr = int(strlist[1])
-    location_x = float(strlist[2])
-    location_y = float(strlist[3])
-    location_z = float(strlist[4])
+    isNlos = int(strlist[2])
+    location_x = float(strlist[3])
+    location_y = float(strlist[4])
+    location_z = float(strlist[5])
     print("insert result")
     form.Insert_Tag_Result(location_addr,
                            {"x": location_x, "y": location_y, "z": location_z, "qt": QGraphicsEllipseItem(-10, -10, 10, 10)})

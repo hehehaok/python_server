@@ -13,43 +13,27 @@ import numpy as np
 
 class Trilateration:
     def __init__(self):
-        self.position = np.array([[-0.5, -0.5, 0],
-                                  [5.5, -0.5, 0],
-                                  [5.5, 5.5, 0],
-                                  [-0.5, 5.5, 0]])
+        self.position = []
         self.distances = []
         self.result = 0
 
     def trilaterate2D(self):
         A = []
         B = []
-        # trilateration using SVD
-        for idx in range(4):
-            if idx == 0:  # i:1 j:4
-                x_coefficient = self.position[3][0] - self.position[idx][0]  # x1-xidx
-                y_coefficient = self.position[3][1] - self.position[idx][1]  # y1-yidx
-                b = 1 / 2 * (self.distances[idx] ** 2 - self.distances[3] ** 2 -
-                             ((self.position[idx][0] - self.position[3][0]) ** 2 + (
-                                     self.position[idx][1] - self.position[3][1]) ** 2)) \
-                    + x_coefficient * self.position[3][0] + y_coefficient * self.position[3][1]
-                A.append([x_coefficient, y_coefficient])
-                B.append([b])
-            else:
-                x_coefficient = self.position[0][0] - self.position[idx][0]  # x1-xidx
-                y_coefficient = self.position[0][1] - self.position[idx][1]  # y1-yidx
-                b = 1 / 2 * (self.distances[idx] ** 2 - self.distances[0] ** 2 -
-                             ((self.position[idx][0] - self.position[0][0]) ** 2 + (
-                                     self.position[idx][1] - self.position[0][1]) ** 2)) \
-                    + x_coefficient * self.position[0][0] + y_coefficient * self.position[0][1]
-                A.append([x_coefficient, y_coefficient])
-                B.append([b])
+        result = np.zeros((3,))
+        r2_n = np.sum([x**2 for x in self.position[-1, :]])
+        for idx in range(np.shape(self.position)[0]-1):
+            x_coefficient = self.position[-1][0] - self.position[idx][0]
+            y_coefficient = self.position[-1][1] - self.position[idx][1]
+            r2_idx = np.sum([x**2 for x in self.position[idx, :]])
+            b = 1 / 2 * (self.distances[idx] ** 2 - self.distances[-1] ** 2 + r2_n - r2_idx)
+            A.append([x_coefficient, y_coefficient])
+            B.append([b])
         B = np.array(B)
         A_pseudo = np.linalg.pinv(A)
         self.result = np.dot(A_pseudo, B)
-        result_x = self.result[0]
-        result_y = self.result[1]
-        # return x, y position
-        return result_x, result_y
+        result[0:2] = self.result.T[0,:] # 2维定位返回纵坐标为0
+        return result
 
     def trilaterate3D(self):
         '''
@@ -57,23 +41,21 @@ class Trilateration:
         '''
         A = []
         B = []
-        r2_3 = np.sum([x**2 for x in self.position[3][:]])
-        for idx in range(3):
-            x_coefficient = self.position[3][0] - self.position[idx][0]
-            y_coefficient = self.position[3][1] - self.position[idx][1]
-            z_coefficient = self.position[3][2] - self.position[idx][2]
+        result = np.zeros((3,))
+        r2_n = np.sum([x**2 for x in self.position[-1, :]])
+        for idx in range(np.shape(self.position)[0]-1):
+            x_coefficient = self.position[-1][0] - self.position[idx][0]
+            y_coefficient = self.position[-1][1] - self.position[idx][1]
+            z_coefficient = self.position[-1][2] - self.position[idx][2]
             r2_idx = np.sum([x**2 for x in self.position[idx][:]])
-            b = 1 / 2 * (self.distances[idx] ** 2 - self.distances[3] ** 2 + r2_3 - r2_idx)
+            b = 1 / 2 * (self.distances[idx] ** 2 - self.distances[3] ** 2 + r2_n - r2_idx)
             A.append([x_coefficient, y_coefficient, z_coefficient])
             B.append([b])
         B = np.array(B)
         A_pseudo = np.linalg.pinv(A)
         self.result = np.dot(A_pseudo, B)
-        result_x = self.result[0]
-        result_y = self.result[1]
-        result_z = self.result[2]
-        # return x, y position
-        return result_x, result_y, result_z
+        result = self.result.T[0,:]
+        return result
 
     def trilaterate2D_2(self, iterations=20, refPos0=None):
         if refPos0 is None:
@@ -132,28 +114,50 @@ class Trilateration:
         # return x, y position
         return result_x, result_y, result_z
 
+    def trilaterate(self):
+        count = np.shape(self.position)[0] # 根据可用基站个数选择定位算法
+        # 选择2维定位还是3维定位
+        if np.sum(np.abs(self.position[:,2])) == 0: #基站纵坐标全设置为0表示使用2维定位
+            if count < 3:
+                self.result = np.zeros((3,))
+            else:
+                self.result = self.trilaterate2D()
+        else: # 否则使用三维定位
+            if count < 4:
+                self.result = np.zeros((3,))
+            else:
+                self.result = self.trilaterate3D()
+        return self.result
+
     def setDistances(self, distances):
         self.distances = distances
 
     def setAnthorCoor(self, Anthor_Node_Configure):
+        self.position = np.zeros((len(Anthor_Node_Configure),3))
         for index in range(len(Anthor_Node_Configure)):
             self.position[index][0] = Anthor_Node_Configure[index][0]
             self.position[index][1] = Anthor_Node_Configure[index][1]
             self.position[index][2] = Anthor_Node_Configure[index][2]
 
+    def setAnthorNlos(self, isNlos):
+        idx = np.where(isNlos)[0]
+        if(len(idx)):
+            for i in idx:
+                del self.distances[i]
+            self.position = np.delete(self.position, idx, axis=0)
 
 # &&&:80$000A:20$0001:A1B1:11#0002:A2B2:22#0003:A3B3::33#0004:A4B4:44#0005:A5B5:55$CRC####
-# 新的格式：&&&:80$000A:20$0001:A1B1:0011#0002:A2B2:0022#0003:A3B3:0033#0004:A4B4:0044#0005:A5B5:0055$CRC####
+# 新的格式：&&&:80$000A:20$0001:A1B1:0011:0#0002:A2B2:0022:0#0003:A3B3:0033:0#0004:A4B4:0044:0$CRC####
 # 根据约定格式提取数据包里的各个信息
 def bphero_dispose(string):
-    result_dict = {'tag': 0x1005, 'seq': 7, 'time': 1234, 'anthor_count': 4,'anthor': []}
+    result_dict = {'tag': 0x1005, 'seq': 7, 'time': 1234, 'anthor_count': 4,'anthor': []} # tag-标签短地址 seq-数据包中的seqNumber anthor_count-基站个数
 
     # 数据包以&&& 开头
     res = re.findall(r'&&&', string)
     flag = 1
     if len(res) > 0:
         # step1 print message length,ex 76
-        temp_string = string.split("$")[0]  # &&&:80$
+        temp_string = string.split("$")[0]  # &&&:80
         data_len = int(temp_string.split(":")[1], 16)
 
         # tag info
@@ -165,22 +169,23 @@ def bphero_dispose(string):
         result_dict['seq'] = tag_seq
 
         # anthor info
-        temp_string = string.split("$")[2]  # 0001:A1B1:0011#0002:A2B2:0022#0003:A3B3:0033#0004:A4B4:0044#0005:A5B5:0055
+        temp_string = string.split("$")[2]  # 0001:A1B1:0011:0#0002:A2B2:0022:0#0003:A3B3:0033:0#0004:A4B4:0044:0
         anthor_count = len(temp_string.split('#'))
         result_dict['anthor_count'] = anthor_count
 
         for index in range(anthor_count):
-            anthor_info = temp_string.split('#')[index]  # 0001:A1B1:0011
+            anthor_info = temp_string.split('#')[index]  # 0001:A1B1:0011:0
             anthor_id = int(anthor_info.split(":")[0], 16)
             anthor_dist = 0.01*int(anthor_info.split(":")[1], 16)   # convert to cm
             # print("Anthor%d Distance = %0.2f m"% (index+1, anthor_dist))
             anthor_rssi = -0.01*int(anthor_info.split(":")[2], 16)
-            result_dict['anthor'].append([anthor_id, anthor_dist, anthor_rssi])
+            anthor_isnlos = int(anthor_info.split(":")[3], 16)
+            result_dict['anthor'].append([anthor_id, anthor_dist, anthor_rssi, anthor_isnlos])
         flag = 0
     return flag, result_dict
 
 
-def Compute_Location(Input_Data):
+def Compute_Location_2D(Input_Data):
     Info = BP_Process_String(Input_Data)
     print(Info)
     if Info['count'] < 4:
@@ -197,51 +202,46 @@ def Compute_Location(Input_Data):
     return result_flag, Info['seq'], Info['tag'], result_x, result_y
 
 
-def Compute_Location_3D(Input_Data):
+def Compute_Location(Input_Data):
     Info = BP_Process_String(Input_Data)
-    print(Info)
-    if Info['count'] < 4:
-        result_x = 0
-        result_y = 0
-        result_z = 0
-        result_flag = 0
-    else:
-        tril3d = Trilateration()
-        tril3d.setDistances(Info['distance'])
-        tril3d.setAnthorCoor(Info['anthor'])
-        result_x, result_y, result_z = tril3d.trilaterate3D()
-        result_flag = 1
-        print("x = %0.2f, y = %0.2f, z = %0.2f" % (result_x, result_y, result_z))
-    return result_flag, Info['seq'], Info['tag'], result_x, result_y, result_z
+    # print(Info)
+    trilater = Trilateration()
+    trilater.setDistances(Info['distance'])
+    trilater.setAnthorCoor(Info['anthor'])
+    trilater.setAnthorNlos(Info['isNlos'])
+    result = trilater.trilaterate()
+    result_flag = 1
+    print("x = %0.2f, y = %0.2f, z = %0.2f" % (result[0], result[1], result[2]))
+    return result_flag, Info['seq'], Info['tag'], Info['isNlos'], result[0], result[1], result[2]
 
 
 # step1 处理接收来的数据包
 def Process_String_Before_Udp(NewString):
     try:
-        error_flag, result_dic = bphero_dispose(NewString)
+        error_flag, result_dic = bphero_dispose(NewString) # error_flag=0表示数据读取正常
     except:
         print('error')
         return 1,0
     return error_flag, result_dic
 
+def twr_main_2D(input_string):
+    print(input_string)
+    error_flag, result_dic = Process_String_Before_Udp(input_string)
+    if error_flag == 0:
+        [location_result, location_seq, location_addr, location_x, location_y] = Compute_Location_2D(result_dic)
+        return location_result, location_seq, location_addr, location_x, location_y
+    return 0, 0, 0, 0, 0
+
 def twr_main(input_string):
     print(input_string)
     error_flag, result_dic = Process_String_Before_Udp(input_string)
     if error_flag == 0:
-        [location_result, location_seq, location_addr, location_x, location_y] = Compute_Location(result_dic)
-        return location_result, location_seq, location_addr, location_x, location_y
-    return 0, 0, 0, 0, 0
-
-def twr_main_3D(input_string):
-    print(input_string)
-    error_flag, result_dic = Process_String_Before_Udp(input_string)
-    if error_flag == 0:
-        [location_result, location_seq, location_addr, location_x, location_y, location_z] = Compute_Location_3D(result_dic)
-        return location_result, location_seq, location_addr, location_x, location_y, location_z
-    return 0, 0, 0, 0, 0, 0
+        [location_flag, location_seq, location_addr, isNlos, location_x, location_y, location_z] = Compute_Location(result_dic)
+        return location_flag, location_seq, location_addr, isNlos, location_x, location_y, location_z
+    return 0, 0, 0, 0, 0, 0, 0
 
 # test code ==============================
-'''
+# '''
 x = 3.2
 y = 1
 import math
@@ -254,9 +254,9 @@ print(dis3)
 dis4 = math.sqrt((x-0)*(x-0) + (y-10)*(y-10))
 print(dis4)
 
-s = '&&&:80$000A:20$0001:%04X:11#0002:%04X:22#0003:%04X:33#0004:%04X:44$CRC####' % (int(dis1*100), int(dis2*100),int(dis3*100),int(dis4*100))
+s = '&&&:80$000A:20$0001:%04X:0011:0#0002:%04X:0022:1#0003:%04X:0033:0#0004:%04X:0044:0$CRC####' % (int(dis1*100), int(dis2*100),int(dis3*100),int(dis4*100))
 print(s)
 twr_main(s)
-'''
+# '''
 # test code end ===========================
 
