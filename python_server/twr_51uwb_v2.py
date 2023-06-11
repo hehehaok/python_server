@@ -504,9 +504,10 @@ class TCP_SERVER(QtCore.QThread):
                 #     self.data_result.emit(
                 #         '%d %d %0.2f %0.2f' % (location_seq, location_addr, location_x, location_y))
                 [location_flag, location_seq, location_addr, isNlos, location_x, location_y, location_z] = twr_main(msg)
+                isNlos = ''.join([str(i) for i in isNlos])
                 if location_flag == 1:
                     self.data_result.emit(
-                        '%d %d %d %0.2f %0.2f %0.2f' % (location_seq, location_addr, isNlos, location_x, location_y, location_z))
+                        '%d %d %s %0.2f %0.2f %0.2f' % (location_seq, location_addr, isNlos, location_x, location_y, location_z))
             except Exception as e:
                 print(e)
                 break
@@ -546,7 +547,10 @@ class TCP_SERVER(QtCore.QThread):
 def insert_result(input_str):
     strlist = input_str.split(' ')
     location_addr = int(strlist[1])
-    isNlos = int(strlist[2])
+    isNlos = list(strlist[2])
+    for nlos in isNlos:
+        if int(nlos):
+            x = 1
     location_x = float(strlist[3])
     location_y = float(strlist[4])
     location_z = float(strlist[5])
