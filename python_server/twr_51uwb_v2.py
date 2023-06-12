@@ -498,7 +498,6 @@ class TCP_SERVER(QtCore.QThread):
                 bytes = client.recv(1024)
                 msg = bytes.decode(encoding='utf8')
                 self.data_draf.emit(msg)  # for debug only
-
                 # [location_result, location_seq, location_addr, location_x, location_y] = twr_main(msg)
                 # if location_result == 1:
                 #     self.data_result.emit(
@@ -510,7 +509,7 @@ class TCP_SERVER(QtCore.QThread):
                         '%d %d %s %0.2f %0.2f %0.2f' % (location_seq, location_addr, isNlos, location_x, location_y, location_z))
             except Exception as e:
                 print(e)
-                break
+                # break
 
     def accept_client(self):
         """

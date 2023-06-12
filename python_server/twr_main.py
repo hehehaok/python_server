@@ -77,7 +77,7 @@ class Trilateration:
                 A[idx, :] = -((position[idx, :] - refPos) / r0)
             x, _, _, _ = np.linalg.lstsq(A, b, rcond=None)
             refPos = refPos + x.T
-            if np.linalg.norm(x) < 1.0e-2:
+            if np.linalg.norm(x) < 1.0e-4:
                 break
         refPos = np.squeeze(refPos, axis=0)
         self.result = refPos
@@ -102,7 +102,7 @@ class Trilateration:
                 A[idx, :] = -((position[idx, :] - refPos) / r0)
             x, _, _, _ = np.linalg.lstsq(A, b, rcond=None)
             refPos = refPos + x.T
-            if np.linalg.norm(x) < 1.0e-2:
+            if np.linalg.norm(x) < 1.0e-4:
                 break
         refPos = np.squeeze(refPos, axis=0)
         self.result = refPos
@@ -242,8 +242,8 @@ def twr_main(input_string):
 
 # test code ==============================
 '''
-x = 3.2
-y = 1
+x = 0.93
+y = 0.72
 import math
 dis1 = math.sqrt((x-0)*(x-0) + (y-0)*(y-0))
 print(dis1)
@@ -254,14 +254,16 @@ print(dis3)
 dis4 = math.sqrt((x-0)*(x-0) + (y-10)*(y-10))
 print(dis4)
 
-s = '&&&:80$000A:20$0001:%04X:0011:1#0002:%04X:0022:1#0003:%04X:0033:0#0004:%04X:0044:0$CRC####' % (int(dis1*100), int(dis2*100),int(dis3*100),int(dis4*100))
+# s = '&&&:80$000A:20$0001:%04X:0011:0#0002:%04X:0022:0#0003:%04X:0033:0#0004:%04X:0044:0$CRC####' % (int(dis1*100), int(dis2*100),int(dis3*100),int(dis4*100))
+s = '&&&:20$0005:CF$0001:007C:1C00:1#0002:00D8:303A:0#0003:00'
+# s = '&&&:20$0005:EB$0001:007F:2046:1#'
 print(s)
 twr_main(s)
 '''
-# '''
+'''
 x = 3.2
 y = 1
-z = 3.8
+z = 4
 import math
 dis1 = math.sqrt((x-0)*(x-0) + (y-0)*(y-0) + (z-1)*(z-1))
 print(dis1)
@@ -272,9 +274,9 @@ print(dis3)
 dis4 = math.sqrt((x-0)*(x-0) + (y-10)*(y-10) + (z-7)*(z-7))
 print(dis4)
 
-s = '&&&:80$000A:20$0001:%04X:0011:0#0002:%04X:0022:0#0003:%04X:0033:0#0004:%04X:0044:0$CRC####' % (int(dis1*100), int(dis2*100),int(dis3*100),int(dis4*100))
+s = '&&&:80$000A:20$0001:%04X:0011:1#0002:%04X:0022:0#0003:%04X:0033:0#0004:%04X:0044:0$CRC####' % (int(dis1*100), int(dis2*100), int(dis3*100), int(dis4*100))
 print(s)
 twr_main(s)
-# '''
+'''
 # test code end ===========================
 
