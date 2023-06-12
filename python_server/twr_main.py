@@ -57,74 +57,73 @@ class Trilateration:
         result = self.result.T[0,:]
         return result
 
-    def trilaterate2D_2(self, iterations=20, refPos0=None):
+    def trilaterate2DInTyler(self, iterations=10, refPos0=None):
         if refPos0 is None:
-            refPos = np.matrix(np.zeros((2, 1)))
+            refPos = np.ones((2,))
+            # 如果使用零矩阵，则在(0,0)处的基站和refPos的距离r0为0
+            # A[idx, :] = -((position[idx, :] - refPos) / r0)的结果为nan
         else:
-            assert np.shape(refPos0) == (2, 1), \
-                "Error: Expected refPos0 to be of shape (2,1), \
-                given refPos0 has shape:" + str(np.shape(refPos0))
-            refPos = refPos0
-        position = np.matrix(self.position[:,:-1]).T
-        numRx = np.shape(position)[1]
-        A = np.matrix(np.zeros((numRx, 2)))
-        b = np.matrix(np.zeros((numRx, 1)))
-
+            assert np.shape(refPos0) == (3,)
+            refPos = refPos0[:,:-1]
+        result = np.zeros((3,))
+        position = self.position[:,:-1]
+        numRx = np.shape(position)[0]
+        A = np.zeros((numRx, 2))
+        b = np.zeros((numRx, 1))
         for i in range(iterations):
             for idx in range(numRx):
-                b[idx, 0] = self.distances[idx] - np.linalg.norm(position[:, idx] - refPos)
-                A[idx, :] = -((position[:, idx] - refPos) / np.linalg.norm(position[:, idx] - refPos)).T
-
+                r0 = np.linalg.norm(position[idx, :] - refPos)
+                b[idx, 0] = self.distances[idx] - r0
+                A[idx, :] = -((position[idx, :] - refPos) / r0)
             x, _, _, _ = np.linalg.lstsq(A, b, rcond=None)
-            refPos = refPos + x
+            refPos = refPos + x.T
             if np.linalg.norm(x) < 1.0e-2:
                 break
+        refPos = np.squeeze(refPos, axis=0)
         self.result = refPos
-        result_x = self.result[0]
-        result_y = self.result[1]
-        # return x, y position
-        return result_x, result_y
+        result[0:2] = refPos
+        return result
 
-    def trilaterate3D_2(self, iterations=20, refPos0=None):
+    def trilaterate3DInTyler(self, iterations=10, refPos0=None):
         if refPos0 is None:
-            refPos = np.matrix(np.zeros((3, 1)))
+            refPos = np.zeros((3,))
         else:
-            assert np.shape(refPos0) == (3, 1), \
-                "Error: Expected refPos0 to be of shape (3,1), \
-                given refPos0 has shape:" + str(np.shape(refPos0))
+            assert np.shape(refPos0) == (3,)
             refPos = refPos0
-        position = np.matrix(self.position).T
-        numRx = np.shape(position)[1]
-        A = np.matrix(np.zeros((numRx, 3)))
-        b = np.matrix(np.zeros((numRx, 1)))
-
+        result = np.zeros((3,))
+        position = self.position
+        numRx = np.shape(position)[0]
+        A = np.zeros((numRx, 3))
+        b = np.zeros((numRx, 1))
         for i in range(iterations):
             for idx in range(numRx):
-                b[idx, 0] = self.distances[idx] - np.linalg.norm(position[:, idx] - refPos)
-                A[idx, :] = -((position[:, idx] - refPos) / np.linalg.norm(position[:, idx] - refPos)).T
-
+                r0 = np.linalg.norm(position[idx, :] - refPos)
+                b[idx, 0] = self.distances[idx] - r0
+                A[idx, :] = -((position[idx, :] - refPos) / r0)
             x, _, _, _ = np.linalg.lstsq(A, b, rcond=None)
-            refPos = refPos + x
-            if np.linalg.norm(x) < 1.0e-3:
+            refPos = refPos + x.T
+            if np.linalg.norm(x) < 1.0e-2:
                 break
+        refPos = np.squeeze(refPos, axis=0)
         self.result = refPos
-        result_x = self.result[0]
-        result_y = self.result[1]
-        result_z = self.result[2]
-        # return x, y position
-        return result_x, result_y, result_z
+        result = refPos
+        return result
 
     def trilaterate(self):
         count = np.shape(self.position)[0] # 根据可用基站个数选择定位算法
         # 选择2维定位还是3维定位
         if np.sum(np.abs(self.position[:,2])) == 0: #基站纵坐标全设置为0表示使用2维定位
-            if count < 3:
+            if count < 2:
                 self.result = np.zeros((3,))
+            elif count == 2:
+                self.result = self.trilaterate2DInTyler()
             else:
                 self.result = self.trilaterate2D()
         else: # 否则使用三维定位
-            if count < 4:
+            if count < 3:
                 self.result = np.zeros((3,))
+            elif count == 3:
+                self.result = self.trilaterate3DInTyler()
             else:
                 self.result = self.trilaterate3D()
         return self.result
@@ -140,11 +139,12 @@ class Trilateration:
             self.position[index][2] = Anthor_Node_Configure[index][2]
 
     def setAnthorNlos(self, isNlos):
-        idx = np.where(isNlos)[0]
-        if(len(idx)):
-            for i in idx:
+        nlosIdx = np.where(isNlos)[0]
+        if(len(nlosIdx)):
+            self.position = np.delete(self.position, nlosIdx, axis=0)
+            for idx,i in enumerate(nlosIdx):
                 del self.distances[i]
-            self.position = np.delete(self.position, idx, axis=0)
+                nlosIdx[idx+1:] = [m-1 for m in nlosIdx[idx+1:]]
 
 # &&&:80$000A:20$0001:A1B1:11#0002:A2B2:22#0003:A3B3::33#0004:A4B4:44#0005:A5B5:55$CRC####
 # 新的格式：&&&:80$000A:20$0001:A1B1:0011:0#0002:A2B2:0022:0#0003:A3B3:0033:0#0004:A4B4:0044:0$CRC####
@@ -241,7 +241,7 @@ def twr_main(input_string):
     return 0, 0, 0, 0, 0, 0, 0
 
 # test code ==============================
-# '''
+'''
 x = 3.2
 y = 1
 import math
@@ -254,7 +254,25 @@ print(dis3)
 dis4 = math.sqrt((x-0)*(x-0) + (y-10)*(y-10))
 print(dis4)
 
-s = '&&&:80$000A:20$0001:%04X:0011:0#0002:%04X:0022:1#0003:%04X:0033:0#0004:%04X:0044:0$CRC####' % (int(dis1*100), int(dis2*100),int(dis3*100),int(dis4*100))
+s = '&&&:80$000A:20$0001:%04X:0011:1#0002:%04X:0022:1#0003:%04X:0033:0#0004:%04X:0044:0$CRC####' % (int(dis1*100), int(dis2*100),int(dis3*100),int(dis4*100))
+print(s)
+twr_main(s)
+'''
+# '''
+x = 3.2
+y = 1
+z = 3.8
+import math
+dis1 = math.sqrt((x-0)*(x-0) + (y-0)*(y-0) + (z-1)*(z-1))
+print(dis1)
+dis2 = math.sqrt((x-10)*(x-10) + (y-0)*(y-0) + (z-3)*(z-3))
+print(dis2)
+dis3 = math.sqrt((x-10)*(x-10) + (y-10)*(y-10) + (z-5)*(z-5))
+print(dis3)
+dis4 = math.sqrt((x-0)*(x-0) + (y-10)*(y-10) + (z-7)*(z-7))
+print(dis4)
+
+s = '&&&:80$000A:20$0001:%04X:0011:0#0002:%04X:0022:0#0003:%04X:0033:0#0004:%04X:0044:0$CRC####' % (int(dis1*100), int(dis2*100),int(dis3*100),int(dis4*100))
 print(s)
 twr_main(s)
 # '''

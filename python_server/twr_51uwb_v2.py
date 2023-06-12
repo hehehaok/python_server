@@ -545,12 +545,13 @@ class TCP_SERVER(QtCore.QThread):
 #                            {"x": location_x, "y": location_y, "z": 0, "qt": QGraphicsEllipseItem(-10, -10, 10, 10)})
 
 def insert_result(input_str):
+    global gAnthor_Node_Configure
     strlist = input_str.split(' ')
     location_addr = int(strlist[1])
     isNlos = list(strlist[2])
-    for nlos in isNlos:
+    for idx, nlos in enumerate(isNlos):
         if int(nlos):
-            x = 1
+            gAnthor_Node_Configure[idx]['qt'].setBrush(QBrush(QtGui.QColor(QtCore.Qt.gray)))
     location_x = float(strlist[3])
     location_y = float(strlist[4])
     location_z = float(strlist[5])
