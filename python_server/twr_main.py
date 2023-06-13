@@ -146,8 +146,7 @@ class Trilateration:
                 del self.distances[i]
                 nlosIdx[idx+1:] = [m-1 for m in nlosIdx[idx+1:]]
 
-# &&&:80$000A:20$0001:A1B1:11#0002:A2B2:22#0003:A3B3::33#0004:A4B4:44#0005:A5B5:55$CRC####
-# 新的格式：&&&:80$000A:20$0001:A1B1:0011:0#0002:A2B2:0022:0#0003:A3B3:0033:0#0004:A4B4:0044:0$CRC####
+# &&&:80$000A:20$0001:A1B1:0011:0#0002:A2B2:0022:0#0003:A3B3:0033:0#0004:A4B4:0044:0$CRC####
 # 根据约定格式提取数据包里的各个信息
 def bphero_dispose(string):
     result_dict = {'tag': 0x1005, 'seq': 7, 'time': 1234, 'anthor_count': 4,'anthor': []} # tag-标签短地址 seq-数据包中的seqNumber anthor_count-基站个数
@@ -184,24 +183,6 @@ def bphero_dispose(string):
         flag = 0
     return flag, result_dict
 
-
-def Compute_Location_2D(Input_Data):
-    Info = BP_Process_String(Input_Data)
-    print(Info)
-    if Info['count'] < 4:
-        result_x = 0
-        result_y = 0
-        result_flag = 0
-    else:
-        tril2d = Trilateration()
-        tril2d.setDistances(Info['distance'])
-        tril2d.setAnthorCoor(Info['anthor'])
-        result_x, result_y = tril2d.trilaterate2D()
-        result_flag = 1
-        print("x = %0.2f, y = %0.2f" % (result_x, result_y))
-    return result_flag, Info['seq'], Info['tag'], result_x, result_y
-
-
 def Compute_Location(Input_Data):
     Info = BP_Process_String(Input_Data)
     # print(Info)
@@ -223,14 +204,6 @@ def Process_String_Before_Udp(NewString):
         print('error')
         return 1,0
     return error_flag, result_dic
-
-def twr_main_2D(input_string):
-    print(input_string)
-    error_flag, result_dic = Process_String_Before_Udp(input_string)
-    if error_flag == 0:
-        [location_result, location_seq, location_addr, location_x, location_y] = Compute_Location_2D(result_dic)
-        return location_result, location_seq, location_addr, location_x, location_y
-    return 0, 0, 0, 0, 0
 
 def twr_main(input_string):
     print(input_string)
@@ -263,15 +236,15 @@ twr_main(s)
 '''
 x = 3.2
 y = 1
-z = 4
+z = 2
 import math
-dis1 = math.sqrt((x-0)*(x-0) + (y-0)*(y-0) + (z-1)*(z-1))
+dis1 = math.sqrt((x-0)*(x-0) + (y-0)*(y-0) + (z-0)*(z-0))
 print(dis1)
-dis2 = math.sqrt((x-10)*(x-10) + (y-0)*(y-0) + (z-3)*(z-3))
+dis2 = math.sqrt((x-10)*(x-10) + (y-0)*(y-0) + (z-1)*(z-1))
 print(dis2)
-dis3 = math.sqrt((x-10)*(x-10) + (y-10)*(y-10) + (z-5)*(z-5))
+dis3 = math.sqrt((x-10)*(x-10) + (y-10)*(y-10) + (z-2)*(z-2))
 print(dis3)
-dis4 = math.sqrt((x-0)*(x-0) + (y-10)*(y-10) + (z-7)*(z-7))
+dis4 = math.sqrt((x-0)*(x-0) + (y-10)*(y-10) + (z-3)*(z-3))
 print(dis4)
 
 s = '&&&:80$000A:20$0001:%04X:0011:1#0002:%04X:0022:0#0003:%04X:0033:0#0004:%04X:0044:0$CRC####' % (int(dis1*100), int(dis2*100), int(dis3*100), int(dis4*100))

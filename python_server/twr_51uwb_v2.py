@@ -385,7 +385,7 @@ class HuiTu(QtWidgets.QMainWindow, Ui_MainWindow):
         self.log_file = fileInfo.split(":")[0]
         maxRaw = int(fileInfo.split(":")[1])
         self.edit_log.clear()
-        self.edit_log.document().setMaximumBlockCount(maxRaw)
+        # self.edit_log.document().setMaximumBlockCount(maxRaw)
         return
 
     def save_log(self):
@@ -548,9 +548,9 @@ def insert_result(input_str):
     strlist = input_str.split(' ')
     location_addr = int(strlist[1])
     isNlos = list(strlist[2])
-    for idx, nlos in enumerate(isNlos):
-        if int(nlos):
-            gAnthor_Node_Configure[idx]['qt'].setBrush(QBrush(QtGui.QColor(QtCore.Qt.gray)))
+    # for idx, nlos in enumerate(isNlos):
+    #     if int(nlos):
+    #         gAnthor_Node_Configure[idx]['qt'].setBrush(QBrush(QtGui.QColor(QtCore.Qt.gray)))
     location_x = float(strlist[3])
     location_y = float(strlist[4])
     location_z = float(strlist[5])
