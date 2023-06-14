@@ -1,6 +1,6 @@
 .idea/
 test.py
-*.txt
+python_server/logData1/
 *.pyc
 
 
