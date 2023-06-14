@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import matplotlib.pyplot as plt
+from filterpy.kalman import ExtendedKalmanFilter
 import numpy as np
 
 from twr_main import *
@@ -23,6 +24,31 @@ class dataAna:
                 trilater.setAnthorCoor(Info['anthor'])
                 # trilater.setAnthorNlos(Info['isNlos']) # 注释掉即不去除NLOS基站
                 result[idx, :] = trilater.trilaterate()
+        f.close()
+        self.posResult = result
+
+    def calPosEKF(self):
+        """
+        静态条件二维下的EKF
+        """
+        # 初始化EKF
+        rk = ExtendedKalmanFilter(dim_x=2, dim_z=4)
+        rk.x = np.array(np.zeros((2,1)))
+        rk.F = np.eye(2)
+        rk.Q = np.diag([0.01, 0.01]) # 状态噪声
+        rk.R = np.diag([0.01, 0.01, 0.01, 0.01]) # 观测噪声
+        rk.P *= 1
+
+        f = open(self.filePath, "r")
+        lines = f.readlines()
+        result = np.zeros((len(lines), 3))
+        for idx, line in enumerate(lines):
+            error_flag, result_dic = Process_String_Before_Udp(line)
+            if error_flag == 0:
+                Info = BP_Process_String(result_dic)
+                rk.update(np.array(Info['distance']).T, calJacobia, calMeas)
+                result[idx, 0:2] = rk.x
+                rk.predict()
         f.close()
         self.posResult = result
 
@@ -81,31 +107,44 @@ class dataAna:
         plt.show()
         return
 
+def calJacobia(x):
+    anchor = np.array([[0,0], [10.32, 0], [10.32, 10.01], [0, 10.01]])
+    xk = x[0] - anchor[:, 0]
+    yk = x[1] - anchor[:, 1]
+    pho = np.sqrt(xk ** 2 + yk ** 2)
+    jacobiaH = np.array([xk/pho, yk/pho]).T
+    return jacobiaH
 
-
+def calMeas(x):
+    anchor = np.array([[0,0], [10.32, 0], [10.32, 10.01], [0, 10.01]])
+    xk = x[0] - anchor[:, 0]
+    yk = x[1] - anchor[:, 1]
+    pho = np.sqrt(xk ** 2 + yk ** 2)
+    return pho[:, None]
 
 # 配置参数A1
+truePosA = np.array([[6.32, 3.2, 0]]) # 2维定位纵坐标设置为0
+dir = 'logData/'
+log_file = 'A1.txt'
+filePathA = dir + log_file
+
+dataA = dataAna(truePosA, filePathA)
+# dataA.calPos()
+dataA.calPosEKF()
+rmsA = dataA.calRMS2D()
+print(rmsA)
+dataA.scatterPlot2D()
+
+# 配置参数B5
 # truePosA = np.array([[6.32, 3.2, 0]]) # 2维定位纵坐标设置为0
 # dir = 'logData/'
-# log_file = 'A1.txt'
+# log_file = 'B5.txt'
 # filePathA = dir + log_file
+# tracePoint = np.array([[0.8, 3.92, 3.92, 0.8, 0.8], [3.2, 3.2, 7.61, 7.61, 3.2]]).T
 #
 # dataA = dataAna(truePosA, filePathA)
 # dataA.calPos()
 # rmsA = dataA.calRMS2D()
 # print(rmsA)
-# dataA.scatterPlot2D()
-
-# 配置参数B5
-truePosA = np.array([[6.32, 3.2, 0]]) # 2维定位纵坐标设置为0
-dir = 'logData/'
-log_file = 'B5.txt'
-filePathA = dir + log_file
-tracePoint = np.array([[0.8, 3.92, 3.92, 0.8, 0.8], [3.2, 3.2, 7.61, 7.61, 3.2]]).T
-
-dataA = dataAna(truePosA, filePathA)
-dataA.calPos()
-rmsA = dataA.calRMS2D()
-print(rmsA)
-# dataA.tracePlot(tracePoint)
-dataA.scenePlot(tracePoint)
+# # dataA.tracePlot(tracePoint)
+# dataA.scenePlot(tracePoint)
