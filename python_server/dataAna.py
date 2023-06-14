@@ -21,7 +21,7 @@ class dataAna:
                 trilater = Trilateration()
                 trilater.setDistances(Info['distance'])
                 trilater.setAnthorCoor(Info['anthor'])
-                trilater.setAnthorNlos(Info['isNlos']) # 注释掉即不去除NLOS基站
+                # trilater.setAnthorNlos(Info['isNlos']) # 注释掉即不去除NLOS基站
                 result[idx, :] = trilater.trilaterate()
         f.close()
         self.posResult = result
@@ -59,14 +59,53 @@ class dataAna:
         plt.show()
         return
 
-# 配置参数1
+    def tracePlot(self, tracePoint):
+        plt.figure(300)
+        plt.rcParams['font.family'] = ['SimHei']
+        plt.plot(tracePoint[:, 0], tracePoint[:, 1])
+        plt.plot(self.posResult[:,0], self.posResult[:,1])
+        plt.legend(['真实轨迹', '定位轨迹'])
+        plt.title('2维定位结果轨迹图')
+        plt.show()
+        return
+
+    def scenePlot(self, tracePoint):
+        anchor = np.array([[0, 10.32, 10.32, 0, 0], [0, 0, 10.01, 10.01, 0]]).T
+        pillar = np.array([[1.78, 2.85, 2.85, 1.78, 1.78], [4.48, 4.48, 6.37, 6.37, 4.48]]).T
+        plt.figure(400)
+        plt.rcParams['font.family'] = ['SimHei']
+        plt.plot(tracePoint[:, 0], tracePoint[:, 1], '-')
+        plt.plot(anchor[:, 0], anchor[:, 1])
+        plt.plot(pillar[:, 0], pillar[:, 1])
+        plt.title('场地俯视图')
+        plt.show()
+        return
+
+
+
+
+# 配置参数A1
+# truePosA = np.array([[6.32, 3.2, 0]]) # 2维定位纵坐标设置为0
+# dir = 'logData/'
+# log_file = 'A1.txt'
+# filePathA = dir + log_file
+#
+# dataA = dataAna(truePosA, filePathA)
+# dataA.calPos()
+# rmsA = dataA.calRMS2D()
+# print(rmsA)
+# dataA.scatterPlot2D()
+
+# 配置参数B5
 truePosA = np.array([[6.32, 3.2, 0]]) # 2维定位纵坐标设置为0
 dir = 'logData/'
-log_file = 'A1.txt'
+log_file = 'B5.txt'
 filePathA = dir + log_file
+tracePoint = np.array([[0.8, 3.92, 3.92, 0.8, 0.8], [3.2, 3.2, 7.61, 7.61, 3.2]]).T
 
 dataA = dataAna(truePosA, filePathA)
 dataA.calPos()
 rmsA = dataA.calRMS2D()
 print(rmsA)
-dataA.scatterPlot2D()
+# dataA.tracePlot(tracePoint)
+dataA.scenePlot(tracePoint)
