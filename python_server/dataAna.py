@@ -2,6 +2,7 @@
 import matplotlib.pyplot as plt
 from filterpy.kalman import ExtendedKalmanFilter
 import numpy as np
+import os
 
 from twr_main import *
 
@@ -18,6 +19,9 @@ class dataAna:
         for idx, line in enumerate(lines):
             error_flag, result_dic = Process_String_Before_Udp(line)
             if error_flag == 0:
+                if result_dic['anthor_count'] != 4:
+                    error_flag = 1 # 排除异常数据
+            if error_flag == 0:
                 Info = BP_Process_String(result_dic)
                 trilater = Trilateration()
                 trilater.setDistances(Info['distance'])
@@ -25,8 +29,10 @@ class dataAna:
                 # trilater.setAnthorNlos(Info['isNlos']) # 注释掉即不去除NLOS基站
                 result[idx, :] = trilater.trilaterate()
         f.close()
-        self.posResult = result
-        return result
+        idx = np.where((result==np.array([0, 0, 0])).all(axis=1))[0]
+        posResult = np.delete(result, idx, axis=0)
+        self.posResult = posResult
+        return posResult
 
     def calPosEKF(self):
         """
@@ -56,15 +62,15 @@ class dataAna:
         self.posResult = result
         return result
 
-    def calRMS2D(self):
-        idx = np.where((self.posResult==np.array([0, 0, 0])).all(axis=1))[0]
-        posResult = np.delete(self.posResult, idx, axis=0)
-        return np.mean(np.linalg.norm((posResult-self.truePos)[:,:-1], axis=1))
+    def calRMS_static(self, axis):
+        # 输出参数axis表示计算哪几个维度上的RMS
+        # 如axis=[0,1,2]表示计算3个维度上的均方误差 axis=[2]表示仅计算z轴上的均方误差
+        return np.mean(np.linalg.norm((self.posResult-self.truePos)[:,axis], axis=1))
 
-    def calRMS3D(self):
-        idx = np.where((self.posResult==np.array([0, 0, 0])).all(axis=1))[0]
-        posResult = np.delete(self.posResult, idx, axis=0)
-        return np.mean(np.linalg.norm(posResult-self.truePos, axis=1))
+    def calRMS_dynamic(self, tracePoint, axis):
+        # 输出参数axis表示计算哪几个维度上的RMS
+        # 如axis=[0,1,2]表示计算3个维度上的均方误差 axis=[2]表示仅计算z轴上的均方误差
+        return np.mean(np.linalg.norm((self.posResult-tracePoint)[:,axis], axis=1))
 
 def calJacobia(x):
     anchor = np.array([[0,0], [10.32, 0], [10.32, 10.01], [0, 10.01]])
@@ -84,42 +90,12 @@ def calMeas(x):
 # 场景坐标
 anchor = np.array([[0, 10.32, 10.32, 0, 0], [0, 0, 10.01, 10.01, 0]]).T # 基站坐标
 pillar = np.array([[1.78, 2.85, 2.85, 1.78, 1.78], [4.48, 4.48, 6.37, 6.37, 4.48]]).T # 柱坐标
+anchor3D = np.array([[0, 10.32, 10.32, 0, 0],
+                     [0, 0, 10.01, 10.01, 0],
+                     [1.27, 0.2, 2.34, 1.535, 1.27]]).T # 基站坐标
 
-
-# 配置参数A1 - 二维静态
-truePosA1 = np.array([[6.32, 3.2, 0]]) # 2维定位纵坐标设置为0
-dir = 'logData/'
-log_file = 'A1.txt'
-filePathA1 = dir + log_file
-
-dataA1 = dataAna(truePosA1, filePathA1)
-posLS = dataA1.calPos()
-rmsLS = dataA1.calRMS2D()
-posEKF = dataA1.calPosEKF()
-rmsEKF = dataA1.calRMS2D()
-
-
-plt.figure(400)
-plt.rcParams['font.family'] = ['SimHei']
-p1 = plt.scatter(dataA1.truePos[0,0], dataA1.truePos[0,1], c='red', s=40)
-p2 = plt.scatter(posLS[:,0], posLS[:,1], c='blue', s=30)
-p3 = plt.scatter(posEKF[:,0], posEKF[:,1], c='green', s=30)
-plt.legend([p1, p2, p3], ['真实位置', 'LS结果%.4f'%(rmsLS), 'EKF结果%.4f'%(rmsEKF)], loc='lower right')
-plt.title('场地俯视图')
-plt.show()
-
-
-
-# 配置参数B5
-# truePosA = np.array([[6.32, 3.2, 0]]) # 2维定位纵坐标设置为0
-# dir = 'logData/'
-# log_file = 'B5.txt'
-# filePathA = dir + log_file
-# tracePoint = np.array([[0.8, 3.92, 3.92, 0.8, 0.8], [3.2, 3.2, 7.61, 7.61, 3.2]]).T
-#
-# dataA = dataAna(truePosA, filePathA)
-# dataA.calPos()
-# rmsA = dataA.calRMS2D()
-# print(rmsA)
-# # dataA.tracePlot(tracePoint)
-# dataA.scenePlot(tracePoint)
+# 图像保存路径
+figPath = 'dataFig'
+if not os.path.exists(figPath):
+    os.makedirs(figPath)
+figPath = figPath + '/'

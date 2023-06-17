@@ -1,6 +1,7 @@
 .idea/
 test.py
 python_server/logData1/
+python_server/dataFig/
 *.pyc
 
 

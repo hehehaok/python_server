@@ -140,6 +140,7 @@ class Trilateration:
 
     def setAnthorNlos(self, isNlos):
         nlosIdx = np.where(isNlos)[0]
+        # nlosIdx = [2]
         if(len(nlosIdx)):
             self.position = np.delete(self.position, nlosIdx, axis=0)
             for idx,i in enumerate(nlosIdx):
