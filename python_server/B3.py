@@ -20,8 +20,8 @@ tracePoint[:, 1] = 3.2
 
 rmsLS = dataB3.calRMS_dynamic(tracePoint=tracePoint, axis=[0,1])
 
-# posEKF = dataB3.calPosEKF()
-# rmsEKF = dataB3.calRMS2D()
+posEKF = dataB3.calPosEKF()
+rmsEKF = dataB3.calRMS_dynamic(tracePoint=tracePoint, axis=[0,1])
 
 # 画图
 fig = plt.figure(400)

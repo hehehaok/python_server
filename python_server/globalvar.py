@@ -7,21 +7,10 @@ Created on Tue Aug  3 07:44:53 2021
 
 
 class global_var:
-    # _global_anthor = [{'enable': 1, 'short_address': 0x0001, 'x': 0, 'y': 0, 'z': 0, 'time': 0, 'qt': 0},
-    #                   {'enable': 1, 'short_address': 0x0002, 'x': 10.33, 'y': 0, 'z': 0, 'time': 0, 'qt': 0},
-    #                   {'enable': 1, 'short_address': 0x0003, 'x': 10.33, 'y': 10.01, 'z': 0, 'time': 0, 'qt': 0},
-    #                   {'enable': 1, 'short_address': 0x0004, 'x': 0, 'y': 10.01, 'z': 0, 'time': 0, 'qt': 0},
-    #                   {'enable': 0, 'short_address': 0x0005, 'x': 5, 'y': 5, 'z': 0, 'time': 0, 'qt': 0},
-    #                   {'enable': 0, 'short_address': 0x0006, 'x': 8, 'y': 6, 'z': 0, 'time': 0, 'qt': 0},
-    #                   {'enable': 0, 'short_address': 0x0007, 'x': 2, 'y': 8, 'z': 0, 'time': 0, 'qt': 0},
-    #                   {'enable': 0, 'short_address': 0x0008, 'x': 2, 'y': 9, 'z': 0, 'time': 0, 'qt': 0},
-    #                   {'enable': 0, 'short_address': 0x0009, 'x': 2, 'y': 9, 'z': 0, 'time': 0, 'qt': 0},
-    #                   {'enable': 0, 'short_address': 0x000A, 'x': 2, 'y': 9, 'z': 0, 'time': 0, 'qt': 0}
-    #                   ]
-    _global_anthor = [{'enable': 1, 'short_address': 0x0001, 'x': 0, 'y': 0, 'z': 1.27, 'time': 0, 'qt': 0},
-                      {'enable': 1, 'short_address': 0x0002, 'x': 10.32, 'y': 0, 'z': 0.2, 'time': 0, 'qt': 0},
-                      {'enable': 1, 'short_address': 0x0003, 'x': 10.32, 'y': 10.01, 'z': 2.34, 'time': 0, 'qt': 0},
-                      {'enable': 1, 'short_address': 0x0004, 'x': 0, 'y': 10.01, 'z': 1.535, 'time': 0, 'qt': 0},
+    _global_anthor = [{'enable': 1, 'short_address': 0x0001, 'x': 0, 'y': 0, 'z': 0, 'time': 0, 'qt': 0},
+                      {'enable': 1, 'short_address': 0x0002, 'x': 10.33, 'y': 0, 'z': 0, 'time': 0, 'qt': 0},
+                      {'enable': 1, 'short_address': 0x0003, 'x': 10.33, 'y': 10.01, 'z': 0, 'time': 0, 'qt': 0},
+                      {'enable': 1, 'short_address': 0x0004, 'x': 0, 'y': 10.01, 'z': 0, 'time': 0, 'qt': 0},
                       {'enable': 0, 'short_address': 0x0005, 'x': 5, 'y': 5, 'z': 0, 'time': 0, 'qt': 0},
                       {'enable': 0, 'short_address': 0x0006, 'x': 8, 'y': 6, 'z': 0, 'time': 0, 'qt': 0},
                       {'enable': 0, 'short_address': 0x0007, 'x': 2, 'y': 8, 'z': 0, 'time': 0, 'qt': 0},
@@ -29,6 +18,17 @@ class global_var:
                       {'enable': 0, 'short_address': 0x0009, 'x': 2, 'y': 9, 'z': 0, 'time': 0, 'qt': 0},
                       {'enable': 0, 'short_address': 0x000A, 'x': 2, 'y': 9, 'z': 0, 'time': 0, 'qt': 0}
                       ]
+    # _global_anthor = [{'enable': 1, 'short_address': 0x0001, 'x': 0, 'y': 0, 'z': 1.27, 'time': 0, 'qt': 0},
+    #                   {'enable': 1, 'short_address': 0x0002, 'x': 10.32, 'y': 0, 'z': 0.2, 'time': 0, 'qt': 0},
+    #                   {'enable': 1, 'short_address': 0x0003, 'x': 10.32, 'y': 10.01, 'z': 2.34, 'time': 0, 'qt': 0},
+    #                   {'enable': 1, 'short_address': 0x0004, 'x': 0, 'y': 10.01, 'z': 1.535, 'time': 0, 'qt': 0},
+    #                   {'enable': 0, 'short_address': 0x0005, 'x': 5, 'y': 5, 'z': 0, 'time': 0, 'qt': 0},
+    #                   {'enable': 0, 'short_address': 0x0006, 'x': 8, 'y': 6, 'z': 0, 'time': 0, 'qt': 0},
+    #                   {'enable': 0, 'short_address': 0x0007, 'x': 2, 'y': 8, 'z': 0, 'time': 0, 'qt': 0},
+    #                   {'enable': 0, 'short_address': 0x0008, 'x': 2, 'y': 9, 'z': 0, 'time': 0, 'qt': 0},
+    #                   {'enable': 0, 'short_address': 0x0009, 'x': 2, 'y': 9, 'z': 0, 'time': 0, 'qt': 0},
+    #                   {'enable': 0, 'short_address': 0x000A, 'x': 2, 'y': 9, 'z': 0, 'time': 0, 'qt': 0}
+    #                   ]
 
 def set_anthor(value):
     global_var._global_anthor = value

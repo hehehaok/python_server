@@ -41,10 +41,24 @@ class dataAna:
         观测方程：4个基站到标签的距离作为观测量，参照论文[UWB Positioning System Based on LSTM Classification With Mitigated NLOS Effects]
         """
         # 初始化EKF
-        rk = ExtendedKalmanFilter(dim_x=2, dim_z=4) # 状态向量的个数 观测向量的个数
-        rk.x = np.array(np.ones((2,1))) # 状态向量[[x_k],[y_k]]
-        rk.F = np.eye(2) # 状态转移矩阵
-        rk.Q = np.diag([0.01, 0.01]) # 状态噪声
+        # rk = ExtendedKalmanFilter(dim_x=2, dim_z=4) # 状态向量的个数 观测向量的个数
+        # rk.x = np.array(np.ones((2,1))) # 状态向量[[x_k],[y_k]]
+        # rk.F = np.eye(2) # 状态转移矩阵
+        # rk.Q = np.diag([0.01, 0.01]) # 状态噪声
+        # rk.R = np.diag([0.01, 0.01, 0.01, 0.01]) # 观测噪声
+        # rk.P *= 0.1 # 均方误差阵
+
+        # 动态二维条件下的EKF
+        # 初始化EKF
+        rk = ExtendedKalmanFilter(dim_x=4, dim_z=4) # 状态向量的个数 观测向量的个数
+        ts = 0.025 # 采样点数据间隔
+        rk.x = np.array(np.ones((4,1))) # 状态向量[[x_k],[y_k],[vx_k],[vy_k]]
+        rk.F = np.eye(4) + np.array([[0,0,1,0],
+                                     [0,0,0,1],
+                                     [0,0,0,0],
+                                     [0,0,0,0]])*ts # 状态转移矩
+        # rk.Q = (np.array([[ts/2,0],[0,ts/2],[1,0],[0,1]])*ts)@np.diag([0.01, 0.01]) # 状态噪声
+        rk.Q = np.diag([0.01, 0.01, 0.01, 0.01]) # 状态噪声
         rk.R = np.diag([0.01, 0.01, 0.01, 0.01]) # 观测噪声
         rk.P *= 0.1 # 均方误差阵
 
@@ -56,7 +70,7 @@ class dataAna:
             if error_flag == 0:
                 Info = BP_Process_String(result_dic)
                 rk.update(np.array(Info['distance'])[:, None], calJacobia, calMeas)
-                result[idx, 0:2] = rk.x.T
+                result[idx, 0:2] = rk.x.T[0,0:2]
                 rk.predict()
         f.close()
         self.posResult = result
@@ -77,7 +91,9 @@ def calJacobia(x):
     xk = x[0] - anchor[:, 0]
     yk = x[1] - anchor[:, 1]
     pho = np.sqrt(xk ** 2 + yk ** 2)
-    jacobiaH = np.array([xk/pho, yk/pho]).T
+    H1 = np.array([xk/pho, yk/pho]).T
+    jacobiaH = np.zeros((4,4))
+    jacobiaH[:,0:2] = H1
     return jacobiaH
 
 def calMeas(x):
